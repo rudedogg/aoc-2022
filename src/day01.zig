@@ -10,8 +10,42 @@ const gpa = util.gpa;
 
 const data = @embedFile("data/day01.txt");
 
+fn sortAscending(context: void, a: u32, b: u32) bool {
+    _ = context;
+    return a > b;
+}
+
 pub fn main() !void {
-    
+    var winning_elf_total: u32 = 0;
+    var current_elf_total: u32 = 0;
+
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
+    const allocator = arena.allocator();
+    var top_elves_list = std.ArrayList(u32).init(allocator);
+
+    var line_iterator = std.mem.split(u8, data, "\n");
+
+    while (line_iterator.next()) |line| {
+        if (std.mem.eql(u8, line, "") == false) {
+            const current_value = try std.fmt.parseUnsigned(u32, line, 10);
+            current_elf_total = current_elf_total + current_value;
+        } else {
+            try top_elves_list.append(current_elf_total);
+
+            if (current_elf_total > winning_elf_total) {
+                winning_elf_total = current_elf_total;
+            }
+            current_elf_total = 0;
+        }
+    }
+
+    std.debug.print("Winning Elf Total: {}\n", .{winning_elf_total});
+
+    std.sort.sort(u32, top_elves_list.items, {}, sortAscending);
+
+    const total = top_elves_list.items[0] + top_elves_list.items[1] + top_elves_list.items[2];
+    std.debug.print("Winning Elf Total: {}", .{total});
 }
 
 // Useful stdlib functions
