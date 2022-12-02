@@ -10,7 +10,7 @@ const gpa = util.gpa;
 
 const data = @embedFile("data/day01.txt");
 
-fn sortAscending(context: void, a: u32, b: u32) bool {
+fn sortDescending(context: void, a: u32, b: u32) bool {
     _ = context;
     return a > b;
 }
@@ -42,7 +42,7 @@ pub fn main() !void {
 
     std.debug.print("Winning Elf Total: {}\n", .{winning_elf_total});
 
-    std.sort.sort(u32, top_elves_list.items, {}, sortAscending);
+    std.sort.sort(u32, top_elves_list.items, {}, sortFn);
 
     const total = top_elves_list.items[0] + top_elves_list.items[1] + top_elves_list.items[2];
     std.debug.print("Winning Elf Total: {}", .{total});
