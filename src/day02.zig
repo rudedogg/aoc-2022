@@ -10,67 +10,56 @@ const gpa = util.gpa;
 
 const data = @embedFile("data/day02.txt");
 
-const TheirShape = enum(u8) { rock = 'A', paper = 'B', scissors = 'C' };
-const OurShape = enum(u8) { rock = 'X', paper = 'Y', scissors = 'Z' };
-
-fn pointsForOurShape(our_shape: OurShape) u8 {
-    return switch (our_shape) {
-        .rock => 1,
-        .paper => 2,
-        .scissors => 3,
-    };
-}
-
-fn scoreOfGame(ours: OurShape, theirs: TheirShape) u8 {
-    const loss = 0;
-    const draw = 3;
-    const win = 6;
-
-    return switch (ours) {
-        .rock => return switch (theirs) {
-            .rock => draw,
-            .paper => loss,
-            .scissors => win,
-        },
-        .paper => return switch (theirs) {
-            .rock => win,
-            .paper => draw,
-            .scissors => loss,
-        },
-        .scissors => return switch (theirs) {
-            .rock => loss,
-            .paper => win,
-            .scissors => draw,
-        },
-    };
-}
+const Choice = enum(u8) { rock = 'A', paper = 'B', scissors = 'C' };
+const DesiredOutcome = enum(u8) { lose = 'X', draw = 'Y', win = 'Z' };
 
 pub fn main() !void {
-
-    // Score for win/loss
-    // 0 = loss
-    // 3 = draw
-    // 6 = win
-
-    // Shape values
-    // 1 = rock
-    // 2 = paper
-    // 3 = scissors
-
     var total_score: u32 = 0;
 
     var line_iterator = std.mem.split(u8, data, "\n");
 
     while (line_iterator.next()) |line| {
         if (std.mem.eql(u8, line, "") == false and std.mem.eql(u8, line, "\n") == false) {
-            const ours = @intToEnum(OurShape, line[2]);
-            const theirs = @intToEnum(TheirShape, line[0]);
-            total_score = total_score + scoreOfGame(ours, theirs);
-            total_score = total_score + pointsForOurShape(ours);
+            const desired_outcome = @intToEnum(DesiredOutcome, line[2]);
+            const theirs = @intToEnum(Choice, line[0]);
+            total_score = total_score + shapePointsForDesiredOutcome(desired_outcome, theirs);
+            total_score = total_score + pointsForOutcome(desired_outcome);
         }
     }
 
     std.debug.print("Total: {}\n", .{total_score});
+}
+
+fn pointsForOutcome(desired_outcome: DesiredOutcome) u8 {
+    return switch (desired_outcome) {
+        .win => 6,
+        .draw => 3,
+        .lose => 0,
+    };
+}
+
+fn shapePointsForDesiredOutcome(desired_outcome: DesiredOutcome, theirs: Choice) u8 {
+    const rock = 1;
+    const paper = 2;
+    const scissors = 3;
+
+    return switch (desired_outcome) {
+        .win => return switch (theirs) {
+            .rock => paper,
+            .paper => scissors,
+            .scissors => rock,
+        },
+        .draw => return switch (theirs) {
+            .rock => rock,
+            .paper => paper,
+            .scissors => scissors,
+        },
+        .lose => return switch (theirs) {
+            .rock => scissors,
+            .paper => rock,
+            .scissors => paper,
+        },
+    };
 }
 
 // Useful stdlib functions
