@@ -20,7 +20,7 @@ pub fn main() !void {
     var end_index: usize = 0;
 
     while (line_iterator.next()) |line| {
-        if (std.mem.eql(u8, line, "") or std.mem.eql(u8, line, "\n")) {
+        if (line.len == 0) {
             continue;
         }
 
