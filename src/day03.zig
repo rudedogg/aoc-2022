@@ -27,7 +27,7 @@ pub fn main() !void {
         end_index = end_index + line.len + 1;
         newline_count = newline_count + 1;
 
-        if (@mod(newline_count, 3) == 1) {
+        if (newline_count % 3 == 1) {
             std.debug.print("\nrucksack_group: \n{s}\n", .{data[start_index..end_index]});
             const common_item = commonItemInRucksacks(data[start_index..end_index]);
 
