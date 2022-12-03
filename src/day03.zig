@@ -14,27 +14,48 @@ pub fn main() !void {
     var line_iterator = std.mem.split(u8, data, "\n");
 
     var sum: usize = 0;
+    var newline_count: usize = 1;
+
+    var rucksack_group: []const u8 = "";
+    const allocator = std.heap.page_allocator;
+
     while (line_iterator.next()) |line| {
         if (std.mem.eql(u8, line, "") or std.mem.eql(u8, line, "\n")) {
             continue;
         }
-        const common_item = commonItemInRucksack(line);
 
-        if (common_item != null) {
-            sum = sum + priorityOfItem(common_item.?);
+        rucksack_group = try std.mem.join(allocator, "", &.{ rucksack_group, line, "\n" });
+        newline_count = newline_count + 1;
+        if (@mod(newline_count, 3) == 1) {
+            std.debug.print("\nrucksack_group: \n{s}", .{rucksack_group});
+            const common_item = commonItemInRucksacks(rucksack_group);
+
+            if (common_item != null) {
+                sum = sum + priorityOfItem(common_item.?);
+            }
+            rucksack_group = "";
         }
     }
+
     std.debug.print("Sum: {}\n", .{sum});
 }
 
-fn commonItemInRucksack(rucksack: []const u8) ?u8 {
-    const rucksack_size = @divFloor(rucksack.len, 2);
-    const rucksack_compartment_1 = rucksack[0..rucksack_size];
-    const rucksack_compartment_2 = rucksack[rucksack_size..];
-    for (rucksack_compartment_1) |item| {
+/// Expected to pass in three lines of rucksacks
+fn commonItemInRucksacks(rucksacks: []const u8) ?u8 {
+    var line_iterator = std.mem.split(u8, rucksacks, "\n");
+    var rucksack1 = line_iterator.next().?;
+    var rucksack2 = line_iterator.next().?;
+    var rucksack3 = line_iterator.next().?;
+    std.debug.print("rucksack1: {s}\n", .{rucksack1});
+    std.debug.print("rucksack2: {s}\n", .{rucksack2});
+    std.debug.print("rucksack3: {s}\n", .{rucksack3});
+
+    for (rucksack1) |item| {
         const item_shadow = [1]u8{item};
-        if (std.mem.indexOf(u8, rucksack_compartment_2, &item_shadow) != null) {
-            return item;
+        if (std.mem.indexOf(u8, rucksack2, &item_shadow) != null) {
+            if (std.mem.indexOf(u8, rucksack3, &item_shadow) != null) {
+                return item;
+            }
         }
     }
     return null;
