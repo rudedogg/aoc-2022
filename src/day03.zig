@@ -16,24 +16,25 @@ pub fn main() !void {
     var sum: usize = 0;
     var newline_count: usize = 1;
 
-    var rucksack_group: []const u8 = "";
-    const allocator = std.heap.page_allocator;
+    var start_index: usize = 0;
+    var end_index: usize = 0;
 
     while (line_iterator.next()) |line| {
         if (std.mem.eql(u8, line, "") or std.mem.eql(u8, line, "\n")) {
             continue;
         }
 
-        rucksack_group = try std.mem.join(allocator, "", &.{ rucksack_group, line, "\n" });
+        end_index = end_index + line.len + 1;
         newline_count = newline_count + 1;
+
         if (@mod(newline_count, 3) == 1) {
-            std.debug.print("\nrucksack_group: \n{s}", .{rucksack_group});
-            const common_item = commonItemInRucksacks(rucksack_group);
+            std.debug.print("\nrucksack_group: \n{s}\n", .{data[start_index..end_index]});
+            const common_item = commonItemInRucksacks(data[start_index..end_index]);
 
             if (common_item != null) {
                 sum = sum + priorityOfItem(common_item.?);
             }
-            rucksack_group = "";
+            start_index = end_index;
         }
     }
 
