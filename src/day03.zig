@@ -63,15 +63,13 @@ fn commonItemInRucksacks(rucksacks: []const u8) ?u8 {
 }
 
 fn priorityOfItem(char: u8) u8 {
-    // Uppercase item types A through Z have priorities 27 through 52.
     if (std.ascii.isLower(char)) {
         // Lowercase item types a through z have priorities 1 through 26.
-        // ASCII 'a' = 97, 'a' priority starts at 1
-        // so we offset by -96
+        // ASCII 'a' = 97, 'a' priority starts at 1 so we offset by -96
         return char - 96;
     } else if (std.ascii.isUpper(char)) {
-        // ASCII 'A' = 65, 'A' priority starts at 27
-        // So we offset by -38
+        // Uppercase item types A through Z have priorities 27 through 52.
+        // ASCII 'A' = 65, 'A' priority starts at 27 so we offset by -38
         return char - 38;
     }
     unreachable;
