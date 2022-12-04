@@ -22,7 +22,7 @@ pub fn main() !void {
 
         const ranges = try splitPairsIntoRanges(line);
 
-        if (rangeIsSubrange(ranges[0], ranges[1]) or rangeIsSubrange(ranges[1], ranges[0])) {
+        if (rangeOverlaps(ranges[0], ranges[1]) or rangeOverlaps(ranges[1], ranges[0])) {
             overlapping_assignments = overlapping_assignments + 1;
         }
     }
@@ -51,6 +51,16 @@ fn splitPairsIntoRanges(input: []const u8) ![2]Range {
     const second_range = try rangeForPair(second_pair_input);
 
     return [2]Range{ first_range, second_range };
+}
+
+fn rangeOverlaps(lrange: Range, rrange: Range) bool {
+    // clamp works too, but seems kind of hacky?
+    // return (std.math.clamp(lrange.lower_bound, rrange.lower_bound, rrange.upper_bound) == lrange.lower_bound);
+    return (isWithinRange(lrange.lower_bound, rrange) or isWithinRange(lrange.upper_bound, rrange));
+}
+
+fn isWithinRange(value: u8, range: Range) bool {
+    return (value >= range.lower_bound and value <= range.upper_bound);
 }
 
 fn rangeIsSubrange(haystack: Range, needle: Range) bool {
