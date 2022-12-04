@@ -13,7 +13,7 @@ const data = @embedFile("data/day04.txt");
 pub fn main() !void {
     var line_iterator = std.mem.split(u8, data, "\n");
 
-    var overlapping_assignments: u32 = 0;
+    var overlapping_assignments: usize = 0;
 
     while (line_iterator.next()) |line| {
         if (line.len == 0) {
@@ -31,14 +31,14 @@ pub fn main() !void {
 }
 
 pub const Range = struct {
-    lower_bound: u8,
-    upper_bound: u8,
+    lower_bound: usize,
+    upper_bound: usize,
 };
 
 fn rangeForPair(input: []const u8) !Range {
     const dash_index = std.mem.indexOf(u8, input, "-").?;
-    const lower_bound = try std.fmt.parseUnsigned(u8, input[0..dash_index], 10);
-    const upper_bound = try std.fmt.parseUnsigned(u8, input[dash_index + 1 ..], 10);
+    const lower_bound = try std.fmt.parseUnsigned(usize, input[0..dash_index], 10);
+    const upper_bound = try std.fmt.parseUnsigned(usize, input[dash_index + 1 ..], 10);
     return Range{ .lower_bound = lower_bound, .upper_bound = upper_bound };
 }
 
@@ -59,7 +59,7 @@ fn rangeOverlaps(lrange: Range, rrange: Range) bool {
     return (isWithinRange(lrange.lower_bound, rrange) or isWithinRange(lrange.upper_bound, rrange));
 }
 
-fn isWithinRange(value: u8, range: Range) bool {
+fn isWithinRange(value: usize, range: Range) bool {
     return (value >= range.lower_bound and value <= range.upper_bound);
 }
 
