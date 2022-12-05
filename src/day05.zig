@@ -11,23 +11,27 @@ const gpa = util.gpa;
 const data = @embedFile("data/day05.txt");
 
 pub fn main() !void {
+    const allocator = gpa;
+
     var section_iterator = std.mem.split(u8, data, "\n\n");
 
     const stacks_input = section_iterator.next().?;
     const moves_input = section_iterator.next().?;
 
-    const stacks = try parseStacks(stacks_input);
-    const moves = try parseMoves(moves_input);
+    const stacks = try parseStacks(allocator, stacks_input);
+    defer stacks.deinit();
+    const moves = try parseMoves(allocator, moves_input);
+    defer allocator.free(moves);
 
-    std.debug.print("Moves: {}\n", .{moves.len});
-    std.debug.print("Stacks: {}\n", .{stacks.items.len});
-    std.debug.print("Stack1: {c}\n", .{stacks.items[0].items[6]});
+    std.debug.print("Total Moves: {}\n", .{moves.len});
+    std.debug.print("Total Stacks: {}\n", .{stacks.items.len});
+    std.debug.print("Stack 1, Item 7: {c}\n", .{stacks.items[0].items[6]});
 
     printTopOfStacks(stacks);
     // Part 1
     // _ = try applyMovesToStacks(moves, stacks);
     // Part 2
-    _ = try applyOrderedMovesToStacks(moves, stacks);
+    try applyOrderedMovesToStacks(allocator, moves, stacks);
     printTopOfStacks(stacks);
 }
 
@@ -45,15 +49,10 @@ const Move = struct {
     }
 };
 
-fn parseStacks(input: []const u8) !List(List(u8)) {
-    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
-    // defer arena.deinit();
-    const allocator = arena.allocator();
-
+fn parseStacks(allocator: Allocator, input: []const u8) !List(List(u8)) {
     var stacks = std.ArrayList(List(u8)).init(allocator);
 
     var stack_index: u8 = 0;
-    // var stack_count = @divFloor(line.len, 4);
 
     while (stack_index < 9) : (stack_index += 1) {
         var stack = std.ArrayList(u8).init(allocator);
@@ -70,18 +69,17 @@ fn parseStacks(input: []const u8) !List(List(u8)) {
                 try stack.insert(0, char);
             }
         }
-        // TODO: Memory management. Need to dupe the items before appending or something?
+        // TODO: Memory management. The nested stack(s) will need freed
         try stacks.append(stack);
     }
 
     return stacks;
 }
 
-fn parseMoves(input: []const u8) ![]Move {
-    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
-    // defer arena.deinit();
-    const allocator = arena.allocator();
+fn parseMoves(allocator: Allocator, input: []const u8) ![]Move {
     var moves = std.ArrayList(Move).init(allocator);
+    defer moves.deinit();
+
     var line_iterator = std.mem.split(u8, input, "\n");
 
     while (line_iterator.next()) |line| {
@@ -103,15 +101,7 @@ fn printTopOfStacks(stacks: List(List(u8))) void {
     std.debug.print("\n", .{});
 }
 
-fn applyMovesToStacks(moves: []Move, stacks: List(List(u8))) !List(List(u8)) {
-    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
-    // defer arena.deinit();
-    const allocator = arena.allocator();
-    _ = allocator;
-    // var updated_stacks = std.ArrayList([]u8).init(allocator);
-
-    // updated_stacks.insertSlice(0, stacks);
-
+fn applyMovesToStacks(moves: []Move, stacks: List(List(u8))) !void {
     for (moves) |move| {
         var count_index: u8 = 0;
         while (count_index < move.count) : (count_index += 1) {
@@ -122,16 +112,12 @@ fn applyMovesToStacks(moves: []Move, stacks: List(List(u8))) !List(List(u8)) {
             }
         }
     }
-    return stacks;
 }
 
-fn applyOrderedMovesToStacks(moves: []Move, stacks: List(List(u8))) !List(List(u8)) {
-    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
-    // defer arena.deinit();
-    const allocator = arena.allocator();
-
+fn applyOrderedMovesToStacks(allocator: Allocator, moves: []Move, stacks: List(List(u8))) !void {
     for (moves) |move| {
         var move_stack = std.ArrayList(u8).init(allocator);
+        defer move_stack.deinit();
         var count_index: u8 = 0;
         while (count_index < move.count) : (count_index += 1) {
             const item_to_move = stacks.items[move.source - 1].popOrNull();
@@ -142,7 +128,6 @@ fn applyOrderedMovesToStacks(moves: []Move, stacks: List(List(u8))) !List(List(u
         // Apply the move
         try stacks.items[move.destination - 1].appendSlice(move_stack.toOwnedSlice());
     }
-    return stacks;
 }
 
 // Useful stdlib functions
