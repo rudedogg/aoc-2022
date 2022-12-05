@@ -39,6 +39,7 @@ const Move = struct {
     count: usize,
     source: u8,
     destination: u8,
+
     fn parse(input: []const u8) !Move {
         var iterator = std.mem.tokenize(u8, input, "move, ,from,to,\n");
         const count = try std.fmt.parseUnsigned(usize, iterator.next().?, 10);
