@@ -24,7 +24,10 @@ pub fn main() !void {
     std.debug.print("Stack1: {c}\n", .{stacks.items[0].items[6]});
 
     printTopOfStacks(stacks);
-    _ = try applyMovesToStacks(moves, stacks);
+    // Part 1
+    // _ = try applyMovesToStacks(moves, stacks);
+    // Part 2
+    _ = try applyOrderedMovesToStacks(moves, stacks);
     printTopOfStacks(stacks);
 }
 
@@ -118,6 +121,26 @@ fn applyMovesToStacks(moves: []Move, stacks: List(List(u8))) !List(List(u8)) {
                 try stacks.items[move.destination - 1].append(item_to_move.?);
             }
         }
+    }
+    return stacks;
+}
+
+fn applyOrderedMovesToStacks(moves: []Move, stacks: List(List(u8))) !List(List(u8)) {
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    // defer arena.deinit();
+    const allocator = arena.allocator();
+
+    for (moves) |move| {
+        var move_stack = std.ArrayList(u8).init(allocator);
+        var count_index: u8 = 0;
+        while (count_index < move.count) : (count_index += 1) {
+            const item_to_move = stacks.items[move.source - 1].popOrNull();
+            if (item_to_move != null) {
+                try move_stack.insert(0, item_to_move.?);
+            }
+        }
+        // Apply the move
+        try stacks.items[move.destination - 1].appendSlice(move_stack.toOwnedSlice());
     }
     return stacks;
 }
