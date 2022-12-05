@@ -20,9 +20,11 @@ pub fn main() !void {
     const moves = try parseMoves(moves_input);
 
     std.debug.print("Moves: {}\n", .{moves.len});
-    std.debug.print("Stacks: {}\n", .{stacks.len});
-    std.debug.print("Stack1: {c}\n", .{stacks[0][6]});
+    std.debug.print("Stacks: {}\n", .{stacks.items.len});
+    std.debug.print("Stack1: {c}\n", .{stacks.items[0].items[6]});
 
+    printTopOfStacks(stacks);
+    _ = try applyMovesToStacks(moves, stacks);
     printTopOfStacks(stacks);
 }
 
@@ -40,12 +42,12 @@ const Move = struct {
     }
 };
 
-fn parseStacks(input: []const u8) ![][](u8) {
+fn parseStacks(input: []const u8) !List(List(u8)) {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     // defer arena.deinit();
     const allocator = arena.allocator();
 
-    var stacks = std.ArrayList([]u8).init(allocator);
+    var stacks = std.ArrayList(List(u8)).init(allocator);
 
     var stack_index: u8 = 0;
     // var stack_count = @divFloor(line.len, 4);
@@ -66,16 +68,15 @@ fn parseStacks(input: []const u8) ![][](u8) {
             }
         }
         // TODO: Memory management. Need to dupe the items before appending or something?
-        try stacks.append(stack.toOwnedSlice());
-        stack.clearAndFree();
+        try stacks.append(stack);
     }
 
-    return stacks.toOwnedSlice();
+    return stacks;
 }
 
 fn parseMoves(input: []const u8) ![]Move {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
-    defer arena.deinit();
+    // defer arena.deinit();
     const allocator = arena.allocator();
     var moves = std.ArrayList(Move).init(allocator);
     var line_iterator = std.mem.split(u8, input, "\n");
@@ -91,30 +92,34 @@ fn parseMoves(input: []const u8) ![]Move {
     return moves.toOwnedSlice();
 }
 
-fn printTopOfStacks(stacks: [][]u8) void {
+fn printTopOfStacks(stacks: List(List(u8))) void {
     std.debug.print("Top of stacks: \n", .{});
-    for (stacks) |stack| {
-        std.debug.print(" [{c}] ", .{stack[stack.len - 1]});
+    for (stacks.items) |stack| {
+        std.debug.print(" [{c}] ", .{stack.items[stack.items.len - 1]});
     }
     std.debug.print("\n", .{});
 }
 
-fn applyMovesToStacks(moves: []Move, stacks: [][]u8) [][]u8 {
+fn applyMovesToStacks(moves: []Move, stacks: List(List(u8))) !List(List(u8)) {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
-    defer arena.deinit();
+    // defer arena.deinit();
     const allocator = arena.allocator();
-    var updated_stacks = std.ArrayList([]u8).init(allocator);
+    _ = allocator;
+    // var updated_stacks = std.ArrayList([]u8).init(allocator);
 
-    updated_stacks.insertSlice(0, stacks);
+    // updated_stacks.insertSlice(0, stacks);
 
     for (moves) |move| {
         var count_index: u8 = 0;
         while (count_index < move.count) : (count_index += 1) {
-            updated_stacks.pop
-             updated_stacks.items[move.source]
-            // stacks[move.]
+            // updated_stacks.pop
+            const item_to_move = stacks.items[move.source - 1].popOrNull();
+            if (item_to_move != null) {
+                try stacks.items[move.destination - 1].append(item_to_move.?);
+            }
         }
     }
+    return stacks;
 }
 
 // Useful stdlib functions
