@@ -106,8 +106,8 @@ fn applyMovesToStacks(moves: []Move, stacks: List(List(u8))) !void {
     for (moves) |move| {
         var count_index: u8 = 0;
         while (count_index < move.count) : (count_index += 1) {
-            // updated_stacks.pop
             const item_to_move = stacks.items[move.source - 1].popOrNull();
+
             if (item_to_move != null) {
                 try stacks.items[move.destination - 1].append(item_to_move.?);
             }
