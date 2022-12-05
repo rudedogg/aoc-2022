@@ -11,7 +11,110 @@ const gpa = util.gpa;
 const data = @embedFile("data/day05.txt");
 
 pub fn main() !void {
-    
+    var section_iterator = std.mem.split(u8, data, "\n\n");
+
+    const stacks_input = section_iterator.next().?;
+    const moves_input = section_iterator.next().?;
+
+    const stacks = try parseStacks(stacks_input);
+    const moves = try parseMoves(moves_input);
+
+    std.debug.print("Moves: {}\n", .{moves.len});
+    std.debug.print("Stacks: {}\n", .{stacks.len});
+    std.debug.print("Stack1: {c}\n", .{stacks[0][6]});
+
+    printTopOfStacks(stacks);
+}
+
+const Move = struct {
+    count: usize,
+    source: u8,
+    destination: u8,
+    fn parse(input: []const u8) !Move {
+        var iterator = std.mem.tokenize(u8, input, "move, ,from,to,\n");
+        const count = try std.fmt.parseUnsigned(usize, iterator.next().?, 10);
+        const source = try std.fmt.parseUnsigned(u8, iterator.next().?, 10);
+        const destination = try std.fmt.parseUnsigned(u8, iterator.next().?, 10);
+
+        return Move{ .count = count, .source = source, .destination = destination };
+    }
+};
+
+fn parseStacks(input: []const u8) ![][](u8) {
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    // defer arena.deinit();
+    const allocator = arena.allocator();
+
+    var stacks = std.ArrayList([]u8).init(allocator);
+
+    var stack_index: u8 = 0;
+    // var stack_count = @divFloor(line.len, 4);
+
+    while (stack_index < 9) : (stack_index += 1) {
+        var stack = std.ArrayList(u8).init(allocator);
+
+        var line_iterator = std.mem.split(u8, input, "\n");
+        while (line_iterator.next()) |line| {
+            if (line.len == 0 or std.mem.eql(u8, line[0..2], " 1")) {
+                continue;
+            }
+
+            const char = line[(stack_index * 4) + 1];
+
+            if (char != ' ') {
+                try stack.insert(0, char);
+            }
+        }
+        // TODO: Memory management. Need to dupe the items before appending or something?
+        try stacks.append(stack.toOwnedSlice());
+        stack.clearAndFree();
+    }
+
+    return stacks.toOwnedSlice();
+}
+
+fn parseMoves(input: []const u8) ![]Move {
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
+    const allocator = arena.allocator();
+    var moves = std.ArrayList(Move).init(allocator);
+    var line_iterator = std.mem.split(u8, input, "\n");
+
+    while (line_iterator.next()) |line| {
+        if (line.len == 0) {
+            continue;
+        }
+
+        const move = try Move.parse(line);
+        try moves.append(move);
+    }
+    return moves.toOwnedSlice();
+}
+
+fn printTopOfStacks(stacks: [][]u8) void {
+    std.debug.print("Top of stacks: \n", .{});
+    for (stacks) |stack| {
+        std.debug.print(" [{c}] ", .{stack[stack.len - 1]});
+    }
+    std.debug.print("\n", .{});
+}
+
+fn applyMovesToStacks(moves: []Move, stacks: [][]u8) [][]u8 {
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
+    const allocator = arena.allocator();
+    var updated_stacks = std.ArrayList([]u8).init(allocator);
+
+    updated_stacks.insertSlice(0, stacks);
+
+    for (moves) |move| {
+        var count_index: u8 = 0;
+        while (count_index < move.count) : (count_index += 1) {
+            updated_stacks.pop
+             updated_stacks.items[move.source]
+            // stacks[move.]
+        }
+    }
 }
 
 // Useful stdlib functions
