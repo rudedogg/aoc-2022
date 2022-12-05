@@ -54,7 +54,6 @@ fn parseStacks(allocator: Allocator, input: []const u8) !List(List(u8)) {
     var stacks = std.ArrayList(List(u8)).init(allocator);
 
     var stack_index: u8 = 0;
-
     while (stack_index < 9) : (stack_index += 1) {
         var stack = std.ArrayList(u8).init(allocator);
 
@@ -82,7 +81,6 @@ fn parseMoves(allocator: Allocator, input: []const u8) ![]Move {
     defer moves.deinit();
 
     var line_iterator = std.mem.split(u8, input, "\n");
-
     while (line_iterator.next()) |line| {
         if (line.len == 0) {
             continue;
@@ -91,14 +89,17 @@ fn parseMoves(allocator: Allocator, input: []const u8) ![]Move {
         const move = try Move.parse(line);
         try moves.append(move);
     }
+
     return moves.toOwnedSlice();
 }
 
 fn printTopOfStacks(stacks: List(List(u8))) void {
     std.debug.print("Top of stacks: \n", .{});
+
     for (stacks.items) |stack| {
         std.debug.print(" [{c}] ", .{stack.items[stack.items.len - 1]});
     }
+
     std.debug.print("\n", .{});
 }
 
@@ -119,6 +120,7 @@ fn applyOrderedMovesToStacks(allocator: Allocator, moves: []Move, stacks: List(L
     for (moves) |move| {
         var move_stack = std.ArrayList(u8).init(allocator);
         defer move_stack.deinit();
+
         var count_index: u8 = 0;
         while (count_index < move.count) : (count_index += 1) {
             const item_to_move = stacks.items[move.source - 1].popOrNull();
