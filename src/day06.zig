@@ -10,46 +10,19 @@ const gpa = util.gpa;
 
 const data = @embedFile("data/day06.txt");
 
-// Start of packet when sequence 4 characters are all different
 pub fn main() !void {
-    var char_stack = [4]u8{ ' ', ' ', ' ', ' ' };
-    var index: usize = 1;
-    for (data) |char| {
-        std.debug.print("Current char: {c}\n", .{char});
-
-        std.debug.print("Index {d}\n", .{index});
-
-        char_stack[0] = char_stack[1];
-        char_stack[1] = char_stack[2];
-        char_stack[2] = char_stack[3];
-        char_stack[3] = char;
-
-        std.debug.print("Stack {s}\n", .{char_stack});
-
-        if (char_stack[0] != ' ' and
-            char_stack[1] != ' ' and
-            char_stack[2] != ' ' and
-            char_stack[3] != ' ' and
-            char_stack[0] != char_stack[1] and
-            char_stack[0] != char_stack[2] and
-            char_stack[0] != char_stack[3] and
-            char_stack[1] != char_stack[0] and
-            char_stack[1] != char_stack[2] and
-            char_stack[1] != char_stack[3] and
-            char_stack[2] != char_stack[0] and
-            char_stack[2] != char_stack[1] and
-            char_stack[2] != char_stack[3] and
-            char_stack[3] != char_stack[0] and
-            char_stack[3] != char_stack[1] and
-            char_stack[3] != char_stack[2])
-        {
+    for (data) |_, index| {
+        var char_set = std.AutoArrayHashMap(u8, void).init(gpa);
+        for (data[index .. index + 14]) |c| {
+            try char_set.put(c, .{});
+        }
+        if (char_set.count() == 14) {
             // Match found
-            std.debug.print("\nFirst marker: {d}\n", .{index});
+            std.debug.print("\nFirst marker: {d}\n", .{index + 14});
+            std.debug.print("\nchar_stack: {s}\n", .{char_set.keys()});
             return;
         }
-        index = index + 1;
     }
-    std.debug.print("\nTop of stacks: \n", .{});
 }
 
 // Useful stdlib functions
