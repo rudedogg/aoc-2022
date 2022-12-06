@@ -11,20 +11,22 @@ const gpa = util.gpa;
 const data = @embedFile("data/day06.txt");
 
 pub fn main() !void {
-    var char_set = std.AutoArrayHashMap(u8, void).init(gpa);
+    const window = 14;
 
-    for (data) |_, index| {
-        char_set.clearRetainingCapacity();
+    outer: for (data) |_, index| {
+        var char_set = [_]bool{false} ** 26;
 
-        for (data[index .. index + 14]) |c| {
-            try char_set.put(c, .{});
+        for (data[index .. index + window]) |c| {
+            if (char_set[c - 'a'] != false) {
+                continue :outer;
+            } else {
+                char_set[c - 'a'] = true;
+            }
         }
-        if (char_set.count() == 14) {
-            // Match found
-            std.debug.print("\nFirst marker: {d}\n", .{index + 14});
-            std.debug.print("\nchar_stack: {s}\n", .{char_set.keys()});
-            return;
-        }
+
+        // Match found
+        std.debug.print("\nCharacters until first marker: {d}\n", .{index + window});
+        return;
     }
 }
 
