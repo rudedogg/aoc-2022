@@ -10,8 +10,46 @@ const gpa = util.gpa;
 
 const data = @embedFile("data/day06.txt");
 
+// Start of packet when sequence 4 characters are all different
 pub fn main() !void {
-    
+    var char_stack = [4]u8{ ' ', ' ', ' ', ' ' };
+    var index: usize = 1;
+    for (data) |char| {
+        std.debug.print("Current char: {c}\n", .{char});
+
+        std.debug.print("Index {d}\n", .{index});
+
+        char_stack[0] = char_stack[1];
+        char_stack[1] = char_stack[2];
+        char_stack[2] = char_stack[3];
+        char_stack[3] = char;
+
+        std.debug.print("Stack {s}\n", .{char_stack});
+
+        if (char_stack[0] != ' ' and
+            char_stack[1] != ' ' and
+            char_stack[2] != ' ' and
+            char_stack[3] != ' ' and
+            char_stack[0] != char_stack[1] and
+            char_stack[0] != char_stack[2] and
+            char_stack[0] != char_stack[3] and
+            char_stack[1] != char_stack[0] and
+            char_stack[1] != char_stack[2] and
+            char_stack[1] != char_stack[3] and
+            char_stack[2] != char_stack[0] and
+            char_stack[2] != char_stack[1] and
+            char_stack[2] != char_stack[3] and
+            char_stack[3] != char_stack[0] and
+            char_stack[3] != char_stack[1] and
+            char_stack[3] != char_stack[2])
+        {
+            // Match found
+            std.debug.print("\nFirst marker: {d}\n", .{index});
+            return;
+        }
+        index = index + 1;
+    }
+    std.debug.print("\nTop of stacks: \n", .{});
 }
 
 // Useful stdlib functions
