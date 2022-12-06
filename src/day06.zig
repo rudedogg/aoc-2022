@@ -11,8 +11,11 @@ const gpa = util.gpa;
 const data = @embedFile("data/day06.txt");
 
 pub fn main() !void {
+    var char_set = std.AutoArrayHashMap(u8, void).init(gpa);
+
     for (data) |_, index| {
-        var char_set = std.AutoArrayHashMap(u8, void).init(gpa);
+        char_set.clearRetainingCapacity();
+
         for (data[index .. index + 14]) |c| {
             try char_set.put(c, .{});
         }
