@@ -35,8 +35,6 @@ fn parseInput(input: []const u8) !std.StringHashMap(usize) {
 
         if (std.mem.eql(u8, line[0..4], "$ cd")) {
             if (line.len == 7 and std.mem.eql(u8, line[5..7], "..")) {
-                std.debug.print("cd .. on path: {s}", .{path.items});
-
                 if (std.mem.eql(u8, path.items, "/") == false) {
                     while (path.pop() != '/') {}
                 }
@@ -46,16 +44,14 @@ fn parseInput(input: []const u8) !std.StringHashMap(usize) {
                     try path.append('/');
                 }
                 try path.appendSlice(dir_name);
-                std.debug.print("Directory Name: {s}\n", .{dir_name});
-                std.debug.print("Path: {s}\n", .{path.items});
             }
         } else if (std.mem.eql(u8, line[0..4], "$ ls")) {
-            std.debug.print("ls Path: {s}\n", .{path.items});
             continue;
         } else if (line[0] >= '0' and line[0] <= '9') {
             var file_iterator = std.mem.split(u8, line, " ");
             const file_size = try std.fmt.parseUnsigned(usize, file_iterator.next().?, 10);
             const file_name = file_iterator.next().?;
+            _ = file_name;
 
             var value = map.get(path.items);
             if (value != null) {
@@ -63,8 +59,6 @@ fn parseInput(input: []const u8) !std.StringHashMap(usize) {
             } else {
                 try map.put(try gpa.dupe(u8, path.items), file_size);
             }
-            std.debug.print("File Size: {d}\n", .{file_size});
-            std.debug.print("File Name: {s}\n", .{file_name});
             // It's a file
         } else {
             // It's a dir name
