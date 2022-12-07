@@ -20,7 +20,7 @@ pub fn main() !void {
     _ = file_tree;
 }
 
-fn parseInput(input: []const u8) !std.StringHashMap(usize) {
+fn parseInput(input: []const u8) !usize {
     var path = List(u8).init(gpa);
     var map = std.StringHashMap(usize).init(gpa);
 
@@ -76,13 +76,17 @@ fn parseInput(input: []const u8) !std.StringHashMap(usize) {
         }
     }
     std.debug.print("total: {d}\n", .{total});
-    return map;
+    return total;
+    // return map;
     // 1381590 too low
     // 1636474 too high
 }
 
 test "input 1" {
-    std.testing.expect(true);
+    const test_data = @embedFile("data/day07test.txt");
+    const total = try parseInput(test_data);
+
+    try std.testing.expect(total == 48381165);
 }
 
 // Useful stdlib functions
