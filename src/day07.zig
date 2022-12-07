@@ -47,11 +47,10 @@ fn parseInput(input: []const u8) !usize {
                 std.debug.print("Path: {s}\n", .{path.items});
             }
         } else if (std.mem.eql(u8, line[0..4], "$ ls")) {
-            // Should check for queued files and add them here?
             continue;
         } else if (line[0] >= '0' and line[0] <= '9') {
             var file_iterator = std.mem.split(u8, line, " ");
-            const file_size = try std.fmt.parseUnsigned(u64, file_iterator.next().?, 10);
+            const file_size = try std.fmt.parseUnsigned(usize, file_iterator.next().?, 10);
             const file_name = file_iterator.next().?;
 
             var value = map.get(path.items);
@@ -71,9 +70,13 @@ fn parseInput(input: []const u8) !usize {
     var total: usize = 0;
     var value_iterator = map.valueIterator();
     while (value_iterator.next()) |value| {
-        if (value.* <= 100000) {
+        if (value.* < 100000) {
             total = total + value.*;
         }
+    }
+    var map_iterator = map.iterator();
+    while (map_iterator.next()) |entry| {
+        std.debug.print("Path: {s}\n  = {d}\n\n", .{ entry.key_ptr.*, entry.value_ptr.* });
     }
     std.debug.print("total: {d}\n", .{total});
     return total;
