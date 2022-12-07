@@ -74,12 +74,12 @@ fn accumulateDirectorySizes(original_map: std.StringHashMap(usize)) !std.StringH
     var total_map = std.StringHashMap(usize).init(gpa);
     var original_map_iterator = original_map.iterator();
     while (original_map_iterator.next()) |entry| {
-        try total_map.putNoClobber(entry.key_ptr.*, entry.value_ptr.*);
+        try total_map.putNoClobber(entry.key_ptr.*, 0);
 
         var nested_map_iterator = original_map.iterator();
         while (nested_map_iterator.next()) |nested_entry| {
             var existing_value = total_map.get(entry.key_ptr.*);
-            if (std.mem.startsWith(u8, nested_entry.key_ptr.*, entry.key_ptr.*) and std.mem.eql(u8, nested_entry.key_ptr.*, entry.key_ptr.*) == false) {
+            if (std.mem.startsWith(u8, nested_entry.key_ptr.*, entry.key_ptr.*)) {
                 try total_map.put(entry.key_ptr.*, existing_value.? + nested_entry.value_ptr.*);
             }
         }
