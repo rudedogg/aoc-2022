@@ -74,13 +74,18 @@ fn accumulateDirectorySizes(original_map: std.StringHashMap(usize)) !std.StringH
     var total_map = std.StringHashMap(usize).init(gpa);
     var original_map_iterator = original_map.iterator();
     while (original_map_iterator.next()) |entry| {
-        try total_map.putNoClobber(entry.key_ptr.*, 0);
+        const parent_directory_path = entry.key_ptr.*;
+        try total_map.putNoClobber(parent_directory_path, 0);
 
         var nested_map_iterator = original_map.iterator();
         while (nested_map_iterator.next()) |nested_entry| {
-            var existing_value = total_map.get(entry.key_ptr.*);
-            if (std.mem.startsWith(u8, nested_entry.key_ptr.*, entry.key_ptr.*)) {
-                try total_map.put(entry.key_ptr.*, existing_value.? + nested_entry.value_ptr.*);
+            const child_directory_path = nested_entry.key_ptr.*; // Possible child directory
+            const size_of_child_directory = nested_entry.value_ptr.*; // Possible child directory
+
+            var current_parent_directory_size = total_map.get(parent_directory_path);
+
+            if (std.mem.startsWith(u8, child_directory_path, parent_directory_path)) {
+                try total_map.put(parent_directory_path, current_parent_directory_size.? + size_of_child_directory);
             }
         }
     }
