@@ -16,11 +16,32 @@ const Directory = struct {
     size: usize,
 };
 
-pub fn main() !void {
-    const tree = std.ArrayList(Directory).init(gpa);
-    _ = tree;
+// const Node = struct {
+//     parent: ?*Node,
+//     name: []const u8,
+//     is_dir: bool,
+//     size: ?usize,
+// };
 
-    parseInput(data);
+const Node = struct {
+    children: std.ArrayList(Node),
+    name: []const u8,
+    is_dir: bool,
+    size: ?usize,
+};
+
+// const FSNode = union {
+//     file: ,
+//     float: f64,
+//     bool: bool,
+// };
+
+pub fn main() !void {
+    // const tree = std.ArrayList(Directory).init(gpa);
+    // _ = tree;
+
+    const root = try parseInput(data);
+    _ = root;
 
     // var line_iterator = std.mem.split(u8, data, "\n");
     // while (line_iterator.next()) |line| {
@@ -30,7 +51,13 @@ pub fn main() !void {
     // }
 }
 
-fn parseInput(input: []const u8) void {
+fn parseInput(input: []const u8) !*Node {
+    var root = try gpa.create(Node);
+    root.* = Node{ .children = List(Node).init(gpa), .name = "", .is_dir = true, .size = null };
+
+    // var cd = try gpa.create(Node);
+    var cd: Node = root.*;
+
     const State = enum { none, dir, ls, cd, file };
     _ = input;
     var state = State.none;
@@ -40,7 +67,7 @@ fn parseInput(input: []const u8) void {
             continue;
         }
 
-        var token_iterator = std.mem.tokenize(u8, line, " ,$");
+        var token_iterator = std.mem.tokenize(u8, line, " ,$,\n");
 
         while (token_iterator.next()) |token| {
             switch (state) {
@@ -54,46 +81,66 @@ fn parseInput(input: []const u8) void {
                         std.debug.print("cd: {s}\n", .{token});
                         state = .cd;
                     } else if (std.mem.eql(u8, token, "ls")) {
-                        std.debug.print("Listing: {s}\n", .{token});
+                        std.debug.print("ls: {s}\n", .{token});
                         state = .ls;
                     } else {
                         // This is a file. Parse the size and name
-                        std.debug.print("File: {s}\n", .{token});
-                        state = .file;
+                        std.debug.print("File name: {s}\n", .{token});
+                        // state = .file;
+                        const file_size = try std.fmt.parseUnsigned(usize, token, 10);
+                        const file_name = token_iterator.next().?;
+                        // std.debug.print("File size: {s}\n", .{token});
+                        var new_file_node = try gpa.create(Node);
+                        new_file_node.* = Node{ .children = List(Node).init(gpa), .name = file_name, .is_dir = false, .size = file_size };
+                        continue;
                     }
                 },
                 .cd => {
                     // token = dir
+                    if (std.mem.eql(u8, token, "..")) {
+                        // &cd = &cd.parent.?;
+                    }
                     std.debug.print("Navigated to: {s}\n", .{token});
                     state = .none;
                 },
                 .dir => {
                     // token = dir
                     std.debug.print("Found dir named: {s}\n", .{token});
-                    state = .none;
+                    // state = .none;
                 },
                 .ls => {
-                    std.debug.print("Listing out: {s}\n", .{token});
+                    if (std.mem.eql(u8, token, "dir")) {
+                        const dir_name = token_iterator.next().?;
+
+                        var new_dir_node = try gpa.create(Node);
+                        new_dir_node.* = Node{ .children = List(Node).init(gpa), .name = dir_name, .is_dir = true, .size = null };
+                        continue;
+                    }
+                    std.debug.print("File name: {s}\n", .{token});
+                    // state = .file;
+                    const file_size = try std.fmt.parseUnsigned(usize, token, 10);
+                    const file_name = token_iterator.next().?;
+                    // std.debug.print("File size: {s}\n", .{token});
+                    // var new_file_node = try gpa.create(Node);
+                    // new_file_node.* = Node{ .children = List(Node).init(gpa), .name = file_name, .is_dir = false, .size = file_size };
+                    // try cd.children.append(&new_file_node);
+                    try cd.children.append(Node{ .children = List(Node).init(gpa), .name = file_name, .is_dir = false, .size = file_size });
                     state = .none;
+                    continue;
+                    // std.debug.print("Listing out: {s}\n", .{token});
                 },
                 .file => {
-                    std.debug.print("File size: {s}\n", .{token});
-                    _ = token_iterator.next(); // skip the file name
-                    state = .none;
+                    // const file_size = try std.fmt.parseUnsigned(usize, token, 10);
+                    // const file_name = token_iterator.next().?;
+                    // // std.debug.print("File size: {s}\n", .{token});
+                    // var new_file_node = try gpa.create(Node);
+                    // new_file_node.* = Node{ .parent = &cd, .name = file_name, .is_dir = false, .size = file_size };
+                    // state = .;
                 },
             }
         }
-
-        // switch (line[0]) {
-        //     '$' => {
-
-        //     }
-        // }
-        // if (line[0] == '$') {
-
-        // }
-
     }
+    return root;
 }
 
 // fn calculateDirectorySize() void {}
