@@ -16,21 +16,15 @@ const Directory = struct {
 };
 
 pub fn main() !void {
-    const root = try parseInput(data);
-    _ = root;
-
-    _ = Directory;
+    const file_tree = try parseInput(data);
+    _ = file_tree;
 }
 
-fn parseInput(input: []const u8) !List(Directory) {
-    _ = input;
-    var path = List([]const u8).init(gpa);
-    var root = List(Directory).init(gpa);
-    try root.append(.{ .name = "/", .size = 0 });
+fn parseInput(input: []const u8) !std.StringHashMap(usize) {
+    var path = List(u8).init(gpa);
+    var map = std.StringHashMap(usize).init(gpa);
 
-    // var cd = 0;
-
-    var line_iterator = std.mem.split(u8, data, "\n");
+    var line_iterator = std.mem.split(u8, input, "\n");
     while (line_iterator.next()) |line| {
         if (line.len == 0) {
             continue;
@@ -39,11 +33,29 @@ fn parseInput(input: []const u8) !List(Directory) {
         if (std.mem.eql(u8, line[0..4], "$ cd")) {
             if (line.len == 7 and std.mem.eql(u8, line[5..7], "..")) {
                 // cd = cd - 1;
-                _ = path.pop();
+                std.debug.print("cd .. on path: {s}", .{path.items});
+
+                if (std.mem.eql(u8, path.items, "/") == false and std.mem.eql(u8, path.items, "") == false) {
+                    // _ = path.pop();
+                    const last_slash_index = std.mem.lastIndexOf(u8, path.items, "/").?;
+                    path.items = path.items[0..last_slash_index];
+
+                    // while (path.pop() != '/') {}
+                }
+                // path.items =
+                // _ = path.pop();
+                // const last_slash_index = std.mem.lastIndexOf(u8, path.items, "/").?;
+                // path.items = path.items[0..last_slash_index];
                 std.debug.print("POP\n", .{});
             } else {
                 const dir_name = line[5..];
-                try path.append(dir_name);
+                if (std.mem.eql(u8, path.items, "/") == false and dir_name[0] != '/') {
+                    try path.append('/');
+                }
+                try path.appendSlice(dir_name);
+                // if (std.mem.eql(u8, path.items, "") == false and std.mem.eql(u8, path.items, "/") == false) {
+                //     try path.append('/');
+                // }
                 std.debug.print("Directory Name: {s}\n", .{dir_name});
                 std.debug.print("Path: {s}\n", .{path.items});
             }
@@ -52,8 +64,15 @@ fn parseInput(input: []const u8) !List(Directory) {
             continue;
         } else if (line[0] >= '0' and line[0] <= '9') {
             var file_iterator = std.mem.split(u8, line, " ");
-            const file_size = try std.fmt.parseUnsigned(usize, file_iterator.next().?, 10);
+            const file_size = try std.fmt.parseUnsigned(u64, file_iterator.next().?, 10);
             const file_name = file_iterator.next().?;
+
+            var value = map.get(path.items);
+            if (value != null) {
+                try map.put(try gpa.dupe(u8, path.items), value.? + file_size);
+            } else {
+                try map.put(try gpa.dupe(u8, path.items), file_size);
+            }
             std.debug.print("File Size: {d}\n", .{file_size});
             std.debug.print("File Name: {s}\n", .{file_name});
             // It's a file
@@ -62,7 +81,17 @@ fn parseInput(input: []const u8) !List(Directory) {
             continue;
         }
     }
-    return root;
+    var total: usize = 0;
+    var value_iterator = map.valueIterator();
+    while (value_iterator.next()) |value| {
+        if (value.* <= 100000) {
+            total = total + value.*;
+        }
+    }
+    std.debug.print("total: {d}\n", .{total});
+    return map;
+    // 1381590 too low
+    // 1636474 too high
 
     //     var token_iterator = std.mem.tokenize(u8, line, " ,$,\n");
 
