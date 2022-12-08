@@ -16,8 +16,8 @@ pub fn main() !void {
 
     const tree_heights = parseInput(data); // [col], [row] order
 
-    var tree_visibility = std.mem.zeroes(TreeVisibility); // [col], [row] order
-    tree_visibility = getTreeVisibilities(tree_heights);
+    // var tree_visibility = std.mem.zeroes(TreeVisibility); // [col], [row] order
+    const tree_visibility = getTreeVisibilities(tree_heights);
     const visible_trees = countVisibleTrees(tree_visibility);
 
     std.debug.print("Visible Trees: {d}", .{visible_trees});
@@ -57,9 +57,9 @@ fn checkRowVisiblity(tree_heights: TreeHeight, col: u8, row: u8, our_height: u8)
     var left_visible = true;
     while (col_to_check < col - 1) : (col_to_check += 1) {
         if (our_height <= tree_heights[col_to_check][row]) {
+            std.debug.print("not visible", .{});
             left_visible = false;
             break;
-            // return false;
         }
     }
 
@@ -69,8 +69,8 @@ fn checkRowVisiblity(tree_heights: TreeHeight, col: u8, row: u8, our_height: u8)
     while (col_to_check <= max_col) : (col_to_check += 1) {
         if (our_height <= tree_heights[col_to_check][row]) {
             right_visible = false;
+            std.debug.print("not visible", .{});
             break;
-            // return false;
         }
     }
     return left_visible or right_visible;
@@ -84,9 +84,9 @@ fn checkColVisiblity(tree_heights: TreeHeight, col: u8, row: u8, our_height: u8)
     var top_visible = true;
     while (row_to_check < row - 1) : (row_to_check += 1) {
         if (our_height <= tree_heights[col][row_to_check]) {
+            std.debug.print("not visible", .{});
             top_visible = false;
             break;
-            // return false;
         }
     }
 
@@ -95,9 +95,9 @@ fn checkColVisiblity(tree_heights: TreeHeight, col: u8, row: u8, our_height: u8)
     var bottom_visible = true;
     while (row_to_check <= max_row) : (row_to_check += 1) {
         if (our_height <= tree_heights[col][row_to_check]) {
+            std.debug.print("not visible", .{});
             bottom_visible = false;
             break;
-            // return false;
         }
     }
     return top_visible or bottom_visible;
@@ -105,6 +105,7 @@ fn checkColVisiblity(tree_heights: TreeHeight, col: u8, row: u8, our_height: u8)
 
 fn determineTreeVisibility(tree_heights: TreeHeight, col: u8, row: u8) bool {
     const our_height = tree_heights[col][row];
+    // std.debug.print("Height[0][3]: {c}", .{tree_heights[0][8]});
     return (checkRowVisiblity(tree_heights, col, row, our_height) or checkColVisiblity(tree_heights, col, row, our_height));
 }
 
