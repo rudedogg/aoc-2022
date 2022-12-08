@@ -47,76 +47,63 @@ fn getTreeVisibilities(tree_heights: [99][99]u8) [99][99]bool {
     }
     return output;
 }
-
-// fn checkRowVisiblity(tree_heights: [99][99]u8, col: u8, row: u8, height: u8) bool {
-//     var col_to_check: usize = 0;
-//     while (col_to_check <= 100) : (col_to_check += 1) {
-//         if (col_to_check == col) {
-//             continue;
-//         }
-//         if (height <= tree_heights[col_to_check][row]) {
-//             return false;
-//         }
-//     }
-//     return true;
-// }
-// fn checkColVisiblity(tree_heights: [99][99]u8, col: u8, row: u8, height: u8) bool {
-//     var row_to_check: usize = 0;
-//     while (row_to_check <= 100) : (row_to_check += 1) {
-//         if (row_to_check == row) {
-//             continue;
-//         }
-//         if (height <= tree_heights[col][row_to_check]) {
-//             return false;
-//         }
-//     }
-//     return true;
-// }
 // Check horizontal visibility
 fn checkRowVisiblity(tree_heights: [99][99]u8, col: u8, row: u8, our_height: u8) bool {
-    var col_to_check: usize = 0;
     if (col == 0 or row == 0 or col == 99 or row == 99) return true;
+    var col_to_check: usize = 0;
     // Check left
+    var left_visible = true;
     while (col_to_check < col - 1) : (col_to_check += 1) {
         if (our_height <= tree_heights[col_to_check][row]) {
-            return false;
+            left_visible = false;
+            break;
+            // return false;
         }
     }
 
     // Check bottom
+    var right_visible = true;
     col_to_check = col + 1;
     while (col_to_check < 99) : (col_to_check += 1) {
         if (our_height <= tree_heights[col_to_check][row]) {
-            return false;
+            right_visible = false;
+            break;
+            // return false;
         }
     }
-    return true;
+    return left_visible or right_visible;
 }
 
 // Check vertical visibility
-fn checkColVisiblity(tree_heights: [99][99]u8, col: u8, row: u8, height: u8) bool {
+fn checkColVisiblity(tree_heights: [99][99]u8, col: u8, row: u8, our_height: u8) bool {
     if (col == 0 or row == 0 or col == 99 or row == 99) return true;
     var row_to_check: usize = 0;
     // Check top
+    var top_visible = true;
     while (row_to_check < row - 1) : (row_to_check += 1) {
-        if (height <= tree_heights[col][row_to_check]) {
-            return false;
+        if (our_height <= tree_heights[col][row_to_check]) {
+            top_visible = false;
+            break;
+            // return false;
         }
     }
 
     // Check bottom
     row_to_check = row + 1;
+    var bottom_visible = true;
     while (row_to_check < 99) : (row_to_check += 1) {
-        if (height <= tree_heights[col][row_to_check]) {
-            return false;
+        if (our_height <= tree_heights[col][row_to_check]) {
+            bottom_visible = false;
+            break;
+            // return false;
         }
     }
-    return true;
+    return top_visible or bottom_visible;
 }
 
 fn determineTreeVisibility(tree_heights: [99][99]u8, col: u8, row: u8) bool {
     const our_height = tree_heights[col][row];
-    return (checkRowVisiblity(tree_heights, col, row, our_height) and checkColVisiblity(tree_heights, col, row, our_height));
+    return (checkRowVisiblity(tree_heights, col, row, our_height) or checkColVisiblity(tree_heights, col, row, our_height));
     // while (col_to_check <= 100) : (col_to_check += 1) {
     //     while (row_to_check <= 100) : (row += 1) {
     //         // for (100 - col) |col_to_check| {
